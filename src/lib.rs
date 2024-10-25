@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use egui::epaint::{ColorImage, Rect, TextureHandle, Vec2};
-use egui::{self, Id, Image, Sense, Widget};
+use egui::{self, Id, Image, ImageSource, Sense, Widget};
 
 pub struct Knob<'a> {
     value: &'a mut f32,
@@ -47,28 +47,33 @@ impl<'a> Knob<'a> {
 
 impl<'a> Widget for Knob<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let scale_img = Image::new(
-            &Self::get_tex(ui, "scale-tex", &self.scale_image),
-            Vec2::splat(76.0),
-        );
+        let scale_img = Image::new(ImageSource::from(&Self::get_tex(
+            ui,
+            "scale-tex",
+            &self.scale_image,
+        )))
+        .fit_to_exact_size(Vec2::splat(76.0));
         let scale_resp = ui.add(scale_img);
         let scale_rect = scale_resp.rect;
 
         const OFFSET: f32 = (15.0 / 360.0) * (2.0 * PI);
         let angle = *self.value * (2.0 * PI - 2.0 * OFFSET) + OFFSET;
-        let knob_img = Image::new(
-            &Self::get_tex(ui, "knob-tex", &self.knob_image),
-            Vec2::splat(50.0),
-        )
+        let knob_img = Image::new(ImageSource::from(&Self::get_tex(
+            ui,
+            "knob-tex",
+            &self.knob_image,
+        )))
+        .fit_to_exact_size(Vec2::splat(50.0))
         .rotate(angle, Vec2::splat(0.5))
         .sense(Sense::hover());
+
         let mut resp = ui.put(
-            Rect::from_center_size(scale_rect.center(), knob_img.size()),
+            Rect::from_center_size(scale_rect.center(), knob_img.size().unwrap()),
             knob_img,
         );
 
         if resp.hovered() {
-            let scroll = ui.input(|input| input.scroll_delta.y);
+            let scroll = ui.input(|input| input.smooth_scroll_delta.y);
             if scroll != 0.0 {
                 *self.value += scroll / 360.0;
                 *self.value = self.value.clamp(0.0, 1.0);
