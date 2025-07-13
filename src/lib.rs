@@ -57,18 +57,19 @@ impl<'a> Widget for Knob<'a> {
         let scale_rect = scale_resp.rect;
 
         const OFFSET: f32 = (15.0 / 360.0) * (2.0 * PI);
+        const SIZE: f32 = 50.0;
         let angle = *self.value * (2.0 * PI - 2.0 * OFFSET) + OFFSET;
         let knob_img = Image::new(ImageSource::from(&Self::get_tex(
             ui,
             "knob-tex",
             &self.knob_image,
         )))
-        .fit_to_exact_size(Vec2::splat(50.0))
+        .fit_to_exact_size(Vec2::splat(SIZE))
         .rotate(angle, Vec2::splat(0.5))
         .sense(Sense::hover());
 
         let mut resp = ui.put(
-            Rect::from_center_size(scale_rect.center(), knob_img.size().unwrap()),
+            Rect::from_center_size(scale_rect.center(), Vec2::splat(SIZE)),
             knob_img,
         );
 
